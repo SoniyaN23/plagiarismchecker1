@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Plagiarism Checker - Results</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Plagiarism Checker — Analysis Result</h1>
+    </header>
+
+    <main>
+      <!-- Summary Row -->
+      <section class="summary-row">
+        <div class="score-card">
+          <h2>Overall Similarity</h2>
+          <div id="similarity-box" class="score-box">--%</div>
+        </div>
+        <div class="chart-card">
+          <canvas id="aiHumanChart" width="300" height="300"></canvas>
+        </div>
+      </section>
+
+      <!-- Results Row -->
+      <section class="results-row">
+        <div class="card card-sources">
+          <h3>Web Sources (matched)</h3>
+          <ul id="sources-list" class="sources-list"></ul>
+        </div>
+
+        <div class="card card-highlights">
+          <h3>Highlighted Matching Sentences</h3>
+          <div id="highlights-list" class="highlights-list"></div>
+        </div>
+      </section>
+
+      <!-- Suggestions -->
+      <section class="card suggestions-card">
+        <h3>Suggestions to Improve</h3>
+        <ul id="suggestion-list" class="suggestion-list"></ul>
+      </section>
+
+      <!-- Google Custom Search Box -->
+      <section class="card web-search-card">
+        <h3>Search Web for References</h3>
+        <!-- Replace cx value with your actual CSE ID -->
+        <script async src="https://cse.google.com/cse.js?cx=f15f639240c6941a1"></script>
+        <div class="gcse-search"></div>
+      </section>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button onclick="window.location.href='index.html'">🔙 New Check</button>
+        <button id="download-pdf-report">⬇️ Download PDF Report</button> 
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Load plagiarism result data from localStorage
+    const resultData = JSON.parse(localStorage.getItem("plagiarismResult")) || {
+      ai: 50, human: 50, similarity: 50,
+      sources: [{ url: "https://example.com/article1", excerpt: "Sample source excerpt." }],
+      highlighted_sentences: [{ text: "This is a sample text from article one.", source: "https://example.com/article1", type: "exact" }],
+      suggestions: ["Review sentences for better paraphrasing."]
+    };
+
+    // Fill similarity box
+    document.getElementById("similarity-box").innerText = resultData.similarity + "%";
+
+    // Build AI vs Human chart
+    const ctx = document.getElementById("aiHumanChart").getContext("2d");
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["AI-generated", "Human-written"],
+        datasets: [{
+          data: [resultData.ai, resultData.human],
+          backgroundColor: ["#FF6B6B", "#4CAF50"],
+          borderColor: ["#fff", "#fff"],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom" } }
+      }
+    });
+
+    // Render web sources
+    const sourcesList = document.getElementById("sources-list");
+    sourcesList.innerHTML = "";
+    if (resultData.sources && resultData.sources.length) {
+      resultData.sources.forEach(s => {
+        const li = document.createElement("li");
+        li.innerHTML = `<a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.url}</a>
+                        <div class="source-excerpt">${escapeHtml(s.excerpt || '')}</div>`;
+        sourcesList.appendChild(li);
+      });
+    } else {
+      sourcesList.innerHTML = "<li>No web sources found.</li>";
+    }
+
+    // Render highlighted sentences
+    const hlList = document.getElementById("highlights-list");
+    hlList.innerHTML = "";
+    if (resultData.highlighted_sentences && resultData.highlighted_sentences.length) {
+      resultData.highlighted_sentences.forEach((h, i) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "highlight-item";
+        const cls = (h.type === "exact") ? "mark-exact" :
+                    (h.type === "paraphrase") ? "mark-paraphrase" : "mark-common";
+        wrapper.innerHTML = `
+          <div class="highlight-meta">
+            <span class="hl-index">#${i+1}</span>
+            <a class="hl-source" href="${h.source}" target="_blank" rel="noopener noreferrer">${shortenUrl(h.source)}</a>
+            <span class="hl-type">(${h.type})</span>
+          </div>
+          <p class="hl-text"><span class="${cls}">${escapeHtml(h.text)}</span></p>
+        `;
+        hlList.appendChild(wrapper);
+      });
+    } else {
+      hlList.innerHTML = "<p>No matching sentences detected.</p>";
+    }
+
+    // Render suggestions
+    const sugList = document.getElementById("suggestion-list");
+    sugList.innerHTML = "";
+    const suggestions = resultData.suggestions || [
+      "Paraphrase the highlighted sentences in your own words.",
+      "Add a citation for each direct quote.",
+      "Add more original analysis or examples."
+    ];
+    suggestions.forEach(s => {
+      const li = document.createElement("li");
+      li.textContent = s;
+      sugList.appendChild(li);
+    });
+
+    // Download PDF button
+    document.getElementById("download-pdf-report").addEventListener("click", () => {
+      window.location.href = '/api/download_report';
+    });
+
+    // Helper functions
+    function escapeHtml(s) {
+      if (!s) return "";
+      return s.replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+    }
+    function shortenUrl(u) {
+      try {
+        const url = new URL(u);
+        return url.hostname + (url.pathname.length > 1 ? url.pathname.slice(0,20)+"..." : "");
+      } catch (e) {
+        return u;
+      }
+    }
+  </script>
+</body>
+</html>

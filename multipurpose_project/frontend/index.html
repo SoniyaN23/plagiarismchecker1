@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plagiarism Checker</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Plagiarism & AI Detector</h1>
+    <nav>
+      <button class="tab-btn" data-tab="text">Text Similarity</button>
+      <button class="tab-btn" data-tab="pdf">PDF Comparison</button>
+      <button class="tab-btn" data-tab="code">Code Similarity</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Text Similarity -->
+    <section id="text" class="tab-content">
+      <h2>Check Text Similarity</h2>
+      <textarea id="text-input" placeholder="Paste text here..."></textarea>
+      <input type="file" id="text-file" />
+      <button id="check-text-btn">Search</button>
+    </section>
+
+    <!-- PDF Comparison -->
+    <section id="pdf" class="tab-content hidden">
+      <h2>Compare Two PDFs</h2>
+      <input type="file" id="pdf1" accept="application/pdf" />
+      <input type="file" id="pdf2" accept="application/pdf" />
+      <button id="compare-pdf-btn">Search</button>
+    </section>
+
+    <!-- Code Similarity -->
+    <section id="code" class="tab-content hidden">
+      <h2>Check Code Similarity</h2>
+      <textarea id="code-input" placeholder="Paste code here..."></textarea>
+      <input type="file" id="code-file" accept=".py,.java,.cpp,.js" />
+      <button id="check-code-btn">Search</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
